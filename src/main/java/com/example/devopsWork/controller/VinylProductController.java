@@ -17,33 +17,44 @@ public class VinylProductController {
     @Autowired
     private VinylProductService productService;
 
-
     @GetMapping("/all")
     public ResponseEntity<?> getAllProducts() {
         return new ResponseEntity<>(productService.all(), HttpStatus.OK);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getOneProduct(@PathVariable Long id) {
         return new ResponseEntity<>(productService.findById(id), HttpStatus.OK);
     }
 
-
-
-
     @GetMapping("/search")
     public ResponseEntity<?> searchProducts(@RequestParam String query) {
         return new ResponseEntity<>(productService.search(query), HttpStatus.OK);
     }
-
 
     @GetMapping("/category/{category}")
     public ResponseEntity<?> getByCategory(@PathVariable String category) {
         return new ResponseEntity<>(productService.findByCategory(category), HttpStatus.OK);
     }
 
+    @PostMapping("/{id}/purchase")
+    public ResponseEntity<?> purchaseProduct(@PathVariable Long id) {
+        Optional<VinylProduct> product = productService.findById(id);
 
+        if (product.isEmpty()) {
+            return new ResponseEntity<>("Product Not Found", HttpStatus.NOT_FOUND);
+        }
+
+        if (!productService.isInStock(id)) {
+            return new ResponseEntity<>("Product out of stock", HttpStatus.BAD_REQUEST);
+        }
+
+
+        productService.purchase(id);
+
+
+        return new ResponseEntity<>(productService.findById(id).get(), HttpStatus.OK);
+    }
 
 
     @PostMapping
